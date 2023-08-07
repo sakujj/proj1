@@ -1,16 +1,23 @@
 package sakuuj.learn.library.config;
 
+import com.zaxxer.hikari.HikariDataSource;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
+
+import javax.sql.DataSource;
+import java.sql.DriverManager;
 
 @Configuration
 @ComponentScan("sakuuj.learn.library")
@@ -46,5 +53,24 @@ public class SpringConfig implements WebMvcConfigurer {
         resolver.setTemplateEngine(templateEngine());
         resolver.setContentType("text/html;charset=UTF-8");
         registry.viewResolver(resolver);
+    }
+
+    @SneakyThrows
+    @Bean
+    public DataSource dataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+
+        Class.forName("org.postgresql.Driver");
+        dataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/project1");
+        dataSource.setUsername("qwe");
+        dataSource.setPassword("123");
+
+
+        return dataSource;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());
     }
 }
