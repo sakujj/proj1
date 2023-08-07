@@ -1,0 +1,11 @@
+services:
+  postgres:
+    container_name: postgres_project1
+    build: .
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - pg_data_project1:/var/lib/postgresql/data
+
+volumes:
+  pg_data_project1:
