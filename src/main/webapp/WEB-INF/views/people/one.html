@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${person.getId()}"></title>
+</head>
+<body>
+<h1>Данные:</h1>
+<p th:text="'ИД: ' + ${person.getId()}"></p>
+<p th:text="'ФИО: ' + ${person.getName()}"></p>
+<p th:text="'Год рождения: ' + ${person.getYearOfBirth()}"></p>
+<hr>
+<form th:action="@{/people/{id}(id=${person.getId()})}" th:method="DELETE">
+    <button type="submit">Удалить</button>
+</form>
+<form th:action="@{/people/{id}/edit(id=${person.getId()})}" th:method="GET">
+    <button type="submit">Изменить</button>
+</form>
+</body>
+</html>
