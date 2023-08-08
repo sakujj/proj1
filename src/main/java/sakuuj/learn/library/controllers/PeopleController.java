@@ -1,11 +1,14 @@
 package sakuuj.learn.library.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sakuuj.learn.library.dao.PersonDao;
 import sakuuj.learn.library.models.Person;
+import sakuuj.learn.library.validators.PersonValidator;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,10 +18,12 @@ import java.util.Optional;
 @RequestMapping("/people")
 public class PeopleController {
     private final PersonDao personDao;
+    private final PersonValidator validator;
 
     @Autowired
-    public PeopleController(PersonDao personDao) {
+    public PeopleController(PersonDao personDao, PersonValidator validator) {
         this.personDao = personDao;
+        this.validator = validator;
     }
 
     @GetMapping()
@@ -29,10 +34,12 @@ public class PeopleController {
     }
 
     @GetMapping("/{id}")
-    public String getSpecified(@PathVariable("id") int id, Model model) {
-        Optional<Person> person = personDao.selectById(id);
-        if (person.isPresent()) {
-            model.addAttribute("person", person.get());
+    public String getSpecified(@PathVariable("id") int id,
+                               @ModelAttribute("person") Person person) {
+        Optional<Person> p = personDao.selectById(id);
+        if (p.isPresent()) {
+            initModelAttributePerson(person, p.get());
+
             return "people/one";
         } else {
             return "redirect:/people";
@@ -46,7 +53,8 @@ public class PeopleController {
         if (p.isEmpty())
             return "redirect:/people";
 
-        person = p.get();
+        initModelAttributePerson(person, p.get());
+
         return "people/edit";
     }
 
@@ -64,7 +72,12 @@ public class PeopleController {
 
     @PatchMapping("/{id}")
     public String updateSpecified(@PathVariable("id") int id,
-                                  @ModelAttribute("person") Person person) {
+                                  @ModelAttribute("person") @Valid Person person,
+                                  BindingResult bindingResult) {
+        validator.validate(person, bindingResult);
+
+        if (bindingResult.hasErrors())
+            return "/people/edit";
         if (personDao.selectById(id).isPresent()) {
             person.setId(id);
             personDao.updateById(person);
@@ -74,9 +87,21 @@ public class PeopleController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") Person person) {
+    public String create(@ModelAttribute("person") @Valid Person person,
+                         BindingResult bindingResult) {
+        validator.validate(person, bindingResult);
+
+        if (bindingResult.hasErrors())
+            return "/people/new";
         personDao.insert(person);
         return "redirect:/people";
+    }
+
+    private static void initModelAttributePerson(Person modelAttribute,
+                                                 Person existingPerson) {
+        modelAttribute.setId(existingPerson.getId());
+        modelAttribute.setName(existingPerson.getName());
+        modelAttribute.setYearOfBirth(existingPerson.getYearOfBirth());
     }
 
 }
