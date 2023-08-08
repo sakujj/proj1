@@ -11,13 +11,33 @@
     <p th:text="'ФИО: ' + *{name}"></p>
     <p th:text="'Год рождения: ' + *{yearOfBirth}"></p>
 </div>
-<hr>
 
-<form th:action="@{/people/{id}(id=${person.getId()})}" th:method="DELETE">
-    <button type="submit">Удалить</button>
-</form>
+
 <form th:action="@{/people/{id}/edit(id=${person.getId()})}" th:method="GET">
     <button type="submit">Изменить</button>
 </form>
+<form th:action="@{/people/{id}(id=${person.getId()})}" th:method="DELETE">
+    <button type="submit">Удалить</button>
+</form>
+
+<hr>
+<h3>Выданные книги:</h3>
+
+<div th:if="${books.size() != 0}">
+
+    <p th:each="book : ${books}">
+        <a
+                th:href="@{/books/{id}(id=${book.getId()})}"
+                th:text="${book.name}
+                        + ', '
+                        + ${book.authorName}
+                        + ', '
+                        + ${book.yearOfPublishing}">
+        </a>
+    </p>
+</div>
+<div th:if="${books.size() == 0}">
+    <p th:text="'Не взял ни одной книги.'"></p>
+</div>
 </body>
 </html>

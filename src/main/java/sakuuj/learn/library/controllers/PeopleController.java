@@ -6,7 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import sakuuj.learn.library.dao.BookDao;
 import sakuuj.learn.library.dao.PersonDao;
+import sakuuj.learn.library.models.Book;
 import sakuuj.learn.library.models.Person;
 import sakuuj.learn.library.validators.PersonValidator;
 
@@ -18,11 +20,13 @@ import java.util.Optional;
 @RequestMapping("/people")
 public class PeopleController {
     private final PersonDao personDao;
+    private final BookDao bookDao;
     private final PersonValidator validator;
 
     @Autowired
-    public PeopleController(PersonDao personDao, PersonValidator validator) {
+    public PeopleController(PersonDao personDao, BookDao bookDao, PersonValidator validator) {
         this.personDao = personDao;
+        this.bookDao = bookDao;
         this.validator = validator;
     }
 
@@ -35,15 +39,18 @@ public class PeopleController {
 
     @GetMapping("/{id}")
     public String getSpecified(@PathVariable("id") int id,
-                               @ModelAttribute("person") Person person) {
+                               @ModelAttribute("person") Person person,
+                               Model model) {
         Optional<Person> p = personDao.selectById(id);
         if (p.isPresent()) {
-            initModelAttributePerson(person, p.get());
+            copyPerson(person, p.get());
 
+            List<Book> books = bookDao.selectByPersonId(id);
+            model.addAttribute("books", books);
             return "people/one";
-        } else {
-            return "redirect:/people";
         }
+
+        return "redirect:/people";
     }
 
     @GetMapping("/{id}/edit")
@@ -53,7 +60,7 @@ public class PeopleController {
         if (p.isEmpty())
             return "redirect:/people";
 
-        initModelAttributePerson(person, p.get());
+        copyPerson(person, p.get());
 
         return "people/edit";
     }
@@ -97,11 +104,11 @@ public class PeopleController {
         return "redirect:/people";
     }
 
-    private static void initModelAttributePerson(Person modelAttribute,
-                                                 Person existingPerson) {
-        modelAttribute.setId(existingPerson.getId());
-        modelAttribute.setName(existingPerson.getName());
-        modelAttribute.setYearOfBirth(existingPerson.getYearOfBirth());
+    private static void copyPerson(Person copyTo,
+                                   Person copyFrom) {
+        copyTo.setId(copyFrom.getId());
+        copyTo.setName(copyFrom.getName());
+        copyTo.setYearOfBirth(copyFrom.getYearOfBirth());
     }
 
 }
