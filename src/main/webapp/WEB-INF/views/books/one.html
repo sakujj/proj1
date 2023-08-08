@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${book.getId()}"></title>
+</head>
+<body th:object="${book}">
+<h3 th:text="*{name}"></h3>
+<p th:text="'Автор: ' + *{authorName}"></p>
+<p th:text="'Год публикации: ' + *{yearOfPublishing}"></p>
+<p th:text="'Ид: ' + *{id}"></p>
+<hr>
+<form th:method="GET" th:action="@{/books/{id}/edit(id=*{id})}">
+    <button type="submit">Изменить</button>
+</form>
+<form th:method="DELETE" th:action="@{/books/{id}(id=*{id})}">
+    <button type="submit">Удалить</button>
+</form>
+<hr>
+<div th:if="${isFree}">
+    <p>Эта книга свободна</p>
+    <form th:method="PATCH">
+        <label for="selection">Выберите человека:</label>
+        <select id="selection" th:field="*{personId}">
+            <option th:each="person : ${people}"
+                    th:value="${person.getId()}"
+                    th:text="${person.getName()}">
+            </option>
+        </select>
+        <input type="hidden" th:field="*{name}"/>
+        <input type="hidden" th:field="*{authorName}"/>
+        <input type="hidden" th:field="*{yearOfPublishing}"/>
+        <button type="submit">Назначить книгу</button>
+    </form>
+</div>
+<div th:if="${!isFree}">
+    <p><span th:text="'Книга выдана: '"></span>
+        <a th:text=" ${owner.name}"
+           th:href="@{/people/{id}(id=${owner.getId()})}"
+        ></a>
+    </p>
+
+<form th:method="PATCH" th:action="@{/books/{id}(id=${book.getId()})}">
+    <input type="hidden" name="personId" th:value="${null}">
+    <input type="hidden" th:field="*{name}">
+    <input type="hidden" th:field="*{authorName}">
+    <input type="hidden" th:field="*{yearOfPublishing}">
+    <button type="submit">Освободить</button>
+</form>
+</div>
+</body>
+</html>

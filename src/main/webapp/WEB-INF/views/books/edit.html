@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Изменить информацию</title>
+</head>
+<body th:object="${book}">
+    <h1 th:text="'Изменение информации о книге' + *{name}"></h1>
+    <form th:method="PATCH" th:action="@{/books/{id}(id=*{id})}">
+        <label for="name">Название:</label>
+        <input type="text" id="name" th:field="*{name}"/>
+        <br>
+        <label for="authorName">Автор:</label>
+        <input type="text" id="authorName" th:field="*{authorName}"/>
+        <br>
+        <label for="yearOfPublishing">Год публикации:</label>
+        <input type="text" id="yearOfPublishing" th:field="*{yearOfPublishing}"/>
+        <br>
+        <button type="submit">Изменить</button>
+    </form>
+</body>
+</html>
