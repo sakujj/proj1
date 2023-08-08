@@ -5,6 +5,8 @@
     <title>Добавить книгу</title>
 </head>
 <body th:object="${book}">
+<div th:insert="~{fragments/navbar.html::navbar}"></div>
+
 <h1>Добавить книгу</h1>
 <form th:method="POST" th:action="@{/books}">
     <label for="name">Название:</label>

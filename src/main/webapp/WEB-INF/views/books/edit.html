@@ -5,6 +5,8 @@
     <title>Изменить информацию</title>
 </head>
 <body th:object="${book}">
+<div th:insert="~{fragments/navbar.html::navbar}"></div>
+
     <h1 th:text="'Изменение информации о книге' + *{name}"></h1>
     <form th:method="PATCH" th:action="@{/books/{id}(id=*{id})}">
         <label for="name">Название:</label>

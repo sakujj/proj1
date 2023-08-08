@@ -5,6 +5,8 @@
     <title th:text="${book.getId()}"></title>
 </head>
 <body th:object="${book}">
+<div th:insert="~{fragments/navbar.html::navbar}"></div>
+
 <h3 th:text="*{name}"></h3>
 <p th:text="'Автор: ' + *{authorName}"></p>
 <p th:text="'Год публикации: ' + *{yearOfPublishing}"></p>
