@@ -20,6 +20,11 @@ public class PersonDao {
             SELECT *
             FROM Person
             WHERE id = ?""";
+
+    private static final String SELECT_BY_NAME = """
+            SELECT *
+            FROM Person
+            WHERE name = ?""";
     private static final String DELETE_BY_ID = """
             DELETE
             FROM Person
@@ -50,6 +55,14 @@ public class PersonDao {
                         id)
                 .stream().findAny();
     }
+
+    public Optional<Person> selectByName(String name) {
+        return jdbcTemplate.query(SELECT_BY_NAME,
+                        new BeanPropertyRowMapper<>(Person.class),
+                        name)
+                .stream().findAny();
+    }
+
 
     public void insert(Person person) {
 
