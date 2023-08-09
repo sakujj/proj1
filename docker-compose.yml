@@ -1,0 +1,25 @@
+services:
+  app:
+    container_name: project1
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - 127.0.0.1:80:8080
+    networks:
+      - proj1net
+
+  postgres:
+    container_name: postgres_project1
+    build: ./db
+    networks:
+      - proj1net
+    volumes:
+      - pg_data_project1:/var/lib/postgresql/data
+
+
+networks:
+  proj1net:
+
+volumes:
+  pg_data_project1:
