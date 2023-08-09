@@ -12,4 +12,6 @@ public class ValidationErrorMessages {
     public static final String ON_SMALL_VALUE = "Entered value is too small";
 
     public static final String ON_PERSON_NAME_ALREADY_TAKEN = "Entered name is already taken";
+
+    public static final String ON_NO_SUCH_OWNER_EXIST = "No specified owner exist";
 }

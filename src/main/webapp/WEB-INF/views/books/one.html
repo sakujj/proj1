@@ -29,6 +29,9 @@
                     th:text="${person.getName()}">
             </option>
         </select>
+
+        <p style="color: red" th:if="${#fields.hasErrors('personId')}" th:errors="*{personId}"></p>
+
         <input type="hidden" th:field="*{name}"/>
         <input type="hidden" th:field="*{authorName}"/>
         <input type="hidden" th:field="*{yearOfPublishing}"/>

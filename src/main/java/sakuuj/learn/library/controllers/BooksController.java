@@ -1,14 +1,18 @@
 package sakuuj.learn.library.controllers;
 
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sakuuj.learn.library.dao.BookDao;
 import sakuuj.learn.library.dao.PersonDao;
 import sakuuj.learn.library.models.Book;
 import sakuuj.learn.library.models.Person;
+import sakuuj.learn.library.validators.BookValidator;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +23,13 @@ public class BooksController {
 
     private BookDao bookDao;
     private PersonDao personDao;
+    private BookValidator validator;
 
     @Autowired
-    public BooksController(BookDao bookDao, PersonDao personDao) {
+    public BooksController(BookDao bookDao, PersonDao personDao, BookValidator validator) {
         this.bookDao = bookDao;
         this.personDao = personDao;
+        this.validator = validator;
     }
 
     @GetMapping()
@@ -76,12 +82,13 @@ public class BooksController {
 
     @PatchMapping("/{id}")
     public String updateSpecified(@PathVariable("id")int id,
-                                  @ModelAttribute("book") Book book) {
+                                  @ModelAttribute("book") @Valid Book book,
+                                  BindingResult bindingResult) {
 
         Optional<Book> selected = bookDao.selectById(id);
-        if (book.getPersonId() != null
-                && personDao.selectById(book.getPersonId()).isEmpty())
-            return "redirect:/books";
+        validator.validate(book, bindingResult);
+        if (bindingResult.hasErrors())
+            return "/books/edit";
 
         if (selected.isPresent()) {
             book.setId(id);
@@ -92,7 +99,12 @@ public class BooksController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute Book book) {
+    public String create(@ModelAttribute @Valid Book book,
+    BindingResult bindingResult) {
+        validator.validate(book, bindingResult);
+        if (bindingResult.hasErrors())
+            return "/books/new";
+
         bookDao.insert(book);
         return "redirect:/books";
     }
