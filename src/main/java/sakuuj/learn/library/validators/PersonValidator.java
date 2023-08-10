@@ -5,16 +5,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import sakuuj.learn.library.constants.ValidationErrorMessages;
-import sakuuj.learn.library.dao.PersonDao;
 import sakuuj.learn.library.models.Person;
+import sakuuj.learn.library.repositories.PersonRepository;
+import sakuuj.learn.library.services.PersonService;
+
+import java.util.Optional;
 
 @Component
 public class PersonValidator implements Validator {
-    private final PersonDao personDao;
+    private final PersonService personService;
 
     @Autowired
-    public PersonValidator(PersonDao personDao) {
-        this.personDao = personDao;
+    public PersonValidator(PersonService personService) {
+        this.personService = personService;
     }
 
     @Override
@@ -25,7 +28,11 @@ public class PersonValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         Person person = (Person) target;
-        if (personDao.selectByName(person.getName()).isPresent())
-            errors.rejectValue("name","", ValidationErrorMessages.ON_PERSON_NAME_ALREADY_TAKEN);
+        Optional<Person> personWithSameName = personService.findByName(person.getName());
+        if (personWithSameName.isPresent()) {
+            Person pWithSameName = personWithSameName.get();
+            if (pWithSameName.getId() != person.getId())
+                errors.rejectValue("name","", ValidationErrorMessages.ON_PERSON_NAME_ALREADY_TAKEN);
+        }
     }
 }

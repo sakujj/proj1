@@ -6,10 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import sakuuj.learn.library.dao.BookDao;
-import sakuuj.learn.library.dao.PersonDao;
 import sakuuj.learn.library.models.Book;
 import sakuuj.learn.library.models.Person;
+import sakuuj.learn.library.repositories.PersonRepository;
+import sakuuj.learn.library.services.BookService;
+import sakuuj.learn.library.services.PersonService;
 import sakuuj.learn.library.validators.PersonValidator;
 
 import java.util.List;
@@ -19,20 +20,22 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/people")
 public class PeopleController {
-    private final PersonDao personDao;
-    private final BookDao bookDao;
+    private final PersonService personService;
+    private final BookService bookService;
     private final PersonValidator validator;
 
     @Autowired
-    public PeopleController(PersonDao personDao, BookDao bookDao, PersonValidator validator) {
-        this.personDao = personDao;
-        this.bookDao = bookDao;
+    public PeopleController(PersonService personService,
+                            BookService bookService,
+                            PersonValidator validator) {
+        this.personService = personService;
+        this.bookService = bookService;
         this.validator = validator;
     }
 
     @GetMapping()
     public String getAll(Model model) {
-        List<Person> people = personDao.selectAll();
+        List<Person> people = personService.findAll();
         model.addAttribute("people", people);
         return "people/all";
     }
@@ -41,11 +44,11 @@ public class PeopleController {
     public String getSpecified(@PathVariable("id") int id,
                                @ModelAttribute("person") Person person,
                                Model model) {
-        Optional<Person> p = personDao.selectById(id);
+        Optional<Person> p = personService.findById(id);
         if (p.isPresent()) {
             copyPerson(person, p.get());
 
-            List<Book> books = bookDao.selectByPersonId(id);
+            List<Book> books = bookService.findByOwner(person);
             model.addAttribute("books", books);
             return "people/one";
         }
@@ -56,7 +59,7 @@ public class PeopleController {
     @GetMapping("/{id}/edit")
     public String getEditingPage(@PathVariable("id") int id,
                                  @ModelAttribute("person") Person person) {
-        Optional<Person> p = personDao.selectById(id);
+        Optional<Person> p = personService.findById(id);
         if (p.isEmpty())
             return "redirect:/people";
 
@@ -72,8 +75,8 @@ public class PeopleController {
 
     @DeleteMapping("/{id}")
     public String deleteSpecified(@PathVariable("id") int id) {
-        if (personDao.selectById(id).isPresent())
-            personDao.deleteById(id);
+        if (personService.findById(id).isPresent())
+            personService.deleteById(id);
         return "redirect:/people";
     }
 
@@ -81,13 +84,17 @@ public class PeopleController {
     public String updateSpecified(@PathVariable("id") int id,
                                   @ModelAttribute("person") @Valid Person person,
                                   BindingResult bindingResult) {
+        person.setId(id);
         validator.validate(person, bindingResult);
 
         if (bindingResult.hasErrors())
             return "/people/edit";
-        if (personDao.selectById(id).isPresent()) {
+        Optional<Person> selected = personService.findById(id);
+        if (selected.isPresent()) {
             person.setId(id);
-            personDao.updateById(person);
+            personService.save(person);
+
+           return "redirect:/people/" + id;
         }
 
         return "redirect:/people";
@@ -100,7 +107,7 @@ public class PeopleController {
 
         if (bindingResult.hasErrors())
             return "/people/new";
-        personDao.insert(person);
+        personService.save(person);
         return "redirect:/people";
     }
 

@@ -21,7 +21,6 @@
         <input type="text" id="yearOfPublishing" th:field="*{yearOfPublishing}"/>
         <p style="color: red" th:if="${#fields.hasErrors('yearOfPublishing')}" th:errors="*{yearOfPublishing}"></p>
         <br>
-        <input type="hidden" th:field="*{personId}"/>
         <button type="submit">Изменить</button>
     </form>
 </body>

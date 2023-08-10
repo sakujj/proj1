@@ -19,37 +19,28 @@
     <button type="submit">Удалить</button>
 </form>
 <hr>
-<div th:if="${isFree}">
+<div th:if="${people}">
     <p>Эта книга свободна</p>
-    <form th:method="PATCH">
+    <form th:method="PATCH" th:action="@{/books/{id}/assign(id=*{id})}">
         <label for="selection">Выберите человека:</label>
-        <select id="selection" th:field="*{personId}">
+        <select id="selection" th:object="${person}" th:field="*{id}">
             <option th:each="person : ${people}"
                     th:value="${person.getId()}"
                     th:text="${person.getName()}">
             </option>
         </select>
 
-        <p style="color: red" th:if="${#fields.hasErrors('personId')}" th:errors="*{personId}"></p>
-
-        <input type="hidden" th:field="*{name}"/>
-        <input type="hidden" th:field="*{authorName}"/>
-        <input type="hidden" th:field="*{yearOfPublishing}"/>
         <button type="submit">Назначить книгу</button>
     </form>
 </div>
-<div th:if="${!isFree}">
+<div th:if="${owner}">
     <p><span th:text="'Книга выдана: '"></span>
         <a th:text=" ${owner.name}"
            th:href="@{/people/{id}(id=${owner.getId()})}"
         ></a>
     </p>
 
-<form th:method="PATCH" th:action="@{/books/{id}(id=${book.getId()})}">
-    <input type="hidden" name="personId" th:value="${null}">
-    <input type="hidden" th:field="*{name}">
-    <input type="hidden" th:field="*{authorName}">
-    <input type="hidden" th:field="*{yearOfPublishing}">
+<form th:method="PATCH" th:action="@{/books/{id}/release(id=${book.getId()})}">
     <button type="submit">Освободить</button>
 </form>
 </div>

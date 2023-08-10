@@ -3,15 +3,15 @@ package sakuuj.learn.library.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import sakuuj.learn.library.dao.BookDao;
-import sakuuj.learn.library.dao.PersonDao;
 import sakuuj.learn.library.models.Book;
 import sakuuj.learn.library.models.Person;
+import sakuuj.learn.library.repositories.PersonRepository;
+import sakuuj.learn.library.services.BookService;
+import sakuuj.learn.library.services.PersonService;
 import sakuuj.learn.library.validators.BookValidator;
 
 import java.util.List;
@@ -21,40 +21,43 @@ import java.util.Optional;
 @RequestMapping("/books")
 public class BooksController {
 
-    private BookDao bookDao;
-    private PersonDao personDao;
+    private BookService bookService;
+    private PersonService personService;
     private BookValidator validator;
 
     @Autowired
-    public BooksController(BookDao bookDao, PersonDao personDao, BookValidator validator) {
-        this.bookDao = bookDao;
-        this.personDao = personDao;
+    public BooksController(BookService bookService,
+                           PersonService personService,
+                           BookValidator validator) {
+        this.bookService = bookService;
+        this.personService = personService;
         this.validator = validator;
     }
 
+
     @GetMapping()
     public String getAll(Model model) {
-        List<Book> books = bookDao.selectAll();
+        List<Book> books = bookService.findAll();
         model.addAttribute("books", books);
         return "books/all";
     }
 
     @GetMapping("/{id}")
-    public String getSpecified(@PathVariable("id")int id,
+    public String getSpecified(@PathVariable("id") int id,
                                @ModelAttribute("book") Book book,
-    Model model) {
-        Optional<Book> b = bookDao.selectById(id);
+                               @ModelAttribute("person") Person person,
+                               Model model) {
+        Optional<Book> b = bookService.findById(id);
+     //   System.out.println("XXXXXXXXXXXXXXXXXXXxx");
         if (b.isPresent()) {
             copyBook(book, b.get());
 
-            if (book.getPersonId() != null) {
-                model.addAttribute("isFree", false);
-                Person owner = personDao.selectById(book.getPersonId()).get();
+            if (book.getOwner() != null) {
+                Person owner = personService.findById(book.getOwner().getId()).get();
                 model.addAttribute("owner", owner);
             } else {
-                List<Person> possibleOwners = personDao.selectAll();
+                List<Person> possibleOwners = personService.findAll();
                 model.addAttribute("people", possibleOwners);
-                model.addAttribute("isFree", true);
             }
 
             return "books/one";
@@ -64,9 +67,9 @@ public class BooksController {
     }
 
     @GetMapping("/{id}/edit")
-    public String getEditingPage(@PathVariable("id")int id,
+    public String getEditingPage(@PathVariable("id") int id,
                                  @ModelAttribute("book") Book book) {
-        Optional<Book> b = bookDao.selectById(id);
+        Optional<Book> b = bookService.findById(id);
         if (b.isPresent()) {
             copyBook(book, b.get());
             return "books/edit";
@@ -81,38 +84,63 @@ public class BooksController {
     }
 
     @PatchMapping("/{id}")
-    public String updateSpecified(@PathVariable("id")int id,
+    public String updateSpecified(@PathVariable("id") int id,
                                   @ModelAttribute("book") @Valid Book book,
                                   BindingResult bindingResult) {
-
-        Optional<Book> selected = bookDao.selectById(id);
-        validator.validate(book, bindingResult);
-        if (bindingResult.hasErrors())
-            return "/books/edit";
-
+       // System.out.println("PPPPPPPPPPPPPPPPPPPPPPP");
+        Optional<Book> selected = bookService.findById(id);
         if (selected.isPresent()) {
             book.setId(id);
-            bookDao.updateById(book);
+            book.setOwner(selected.get().getOwner());
+            bookService.save(book);
         }
 
-        return "redirect:/books";
+        return "redirect:/books/" + id;
+    }
+
+    @PatchMapping("/{id}/assign")
+    public String assignOwner(@PathVariable("id") int id,
+                              @ModelAttribute("owner") Person owner) {
+        Optional<Book> book = bookService.findById(id);
+
+        if (book.isPresent()) {
+            Book selected = book.get();
+            //System.out.println(owner);
+
+            selected.setOwner(owner);
+
+            bookService.save(selected);
+        }
+        return "redirect:/books/" + id;
+    }
+
+    @PatchMapping("/{id}/release")
+    public String releaseOwner(@PathVariable("id") int id) {
+        Optional<Book> book = bookService.findById(id);
+        if (book.isPresent()) {
+            Book selected = book.get();
+            selected.setOwner(null);
+
+            bookService.save(selected);
+        }
+        return "redirect:/books/" + id;
     }
 
     @PostMapping()
     public String create(@ModelAttribute @Valid Book book,
-    BindingResult bindingResult) {
+                         BindingResult bindingResult) {
         validator.validate(book, bindingResult);
         if (bindingResult.hasErrors())
             return "/books/new";
 
-        bookDao.insert(book);
+        bookService.save(book);
         return "redirect:/books";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteSpecified(@PathVariable("id")int id) {
-        if (bookDao.selectById(id).isPresent()) {
-            bookDao.deleteById(id);
+    public String deleteSpecified(@PathVariable("id") int id) {
+        if (bookService.findById(id).isPresent()) {
+            bookService.deleteById(id);
         }
 
         return "redirect:/books";
@@ -123,6 +151,6 @@ public class BooksController {
         copyTo.setName(copyFrom.getName());
         copyTo.setAuthorName(copyFrom.getAuthorName());
         copyTo.setYearOfPublishing(copyFrom.getYearOfPublishing());
-        copyTo.setPersonId(copyFrom.getPersonId());
+        copyTo.setOwner(copyFrom.getOwner());
     }
 }

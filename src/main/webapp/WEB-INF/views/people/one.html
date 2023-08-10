@@ -7,11 +7,10 @@
 <body>
 <div th:insert="~{fragments/navbar.html::navbar}"></div>
 
-<h1>Данные:</h1>
 <div th:object="${person}">
-    <p th:text="'ИД: ' + *{id}"></p>
-    <p th:text="'ФИО: ' + *{name}"></p>
+    <h3 th:text="*{name}"></h3>
     <p th:text="'Год рождения: ' + *{yearOfBirth}"></p>
+    <p th:text="'ИД: ' + *{id}"></p>
 </div>
 
 
@@ -25,7 +24,7 @@
 <hr>
 <h3>Выданные книги:</h3>
 
-<div th:if="${books.size() != 0}">
+<div th:if="${!books.isEmpty()}">
 
     <p th:each="book : ${books}">
         <a
@@ -38,7 +37,7 @@
         </a>
     </p>
 </div>
-<div th:if="${books.size() == 0}">
+<div th:if="${books.isEmpty()}">
     <p th:text="'Не взял ни одной книги.'"></p>
 </div>
 </body>
