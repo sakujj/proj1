@@ -91,6 +91,19 @@ public class BooksController {
         return "books/all";
     }
 
+    @GetMapping("/search")
+    public String getSearchPage(@RequestParam(value = "searchedBook", required = false)
+                                String bookName,
+                                Model model) {
+        System.out.println(bookName);
+        if (bookName == null)
+            return "/books/search";
+
+        List<Book> books = bookService.findByNameIgnoreCaseStartsWith(bookName);
+        model.addAttribute("books", books);
+        model.addAttribute("searchedBookName", bookName);
+        return "/books/search";
+    }
 
     @GetMapping("/{id}")
     public String getSpecified(@PathVariable("id") int id,
@@ -117,8 +130,8 @@ public class BooksController {
     }
 
     @GetMapping("/{id}/edit")
-    public String getEditingPage(@PathVariable("id") int id,
-                                 @ModelAttribute("book") Book book) {
+    public String getEditPage(@PathVariable("id") int id,
+                              @ModelAttribute("book") Book book) {
         Optional<Book> b = bookService.findById(id);
         if (b.isPresent()) {
             copyBook(book, b.get());

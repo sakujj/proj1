@@ -2,9 +2,11 @@
 <html lang="en">
 <body>
     <div th:fragment="navbar">
-        <a th:href="@{/people}" th:text="Читатели"></a>
+        <a th:href="@{/people}" th:text="'Читатели'"></a>
         &nbsp;
-        <a th:href="@{/books}" th:text="Книги"></a>
+        <a th:href="@{/books}" th:text="'Книги'"></a>
+        &nbsp;
+        <a th:href="@{/books/search}" th:text="'Поиск книг'"></a>
     </div>
 </body>
 </html>

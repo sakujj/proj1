@@ -41,6 +41,9 @@ public class BookService {
         bookRepo.save(book);
     }
 
+    public List<Book> findByNameIgnoreCaseStartsWith(String part) {
+        return bookRepo.findByNameIgnoreCaseStartsWith(part);
+    }
     @Transactional
     public void deleteById(int id) {
         bookRepo.deleteById(id);

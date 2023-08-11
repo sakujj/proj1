@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск</title>
+</head>
+<body>
+<div th:insert="~{fragments/navbar}"></div>
+<hr>
+<form th:method="GET" th:action="@{/books/search}">
+    <label for="search-input">Введите начало названия: </label>
+    <input type="text" id="search-input" name="searchedBook" th:value="${searchedBookName} == null ? '' : ${searchedBookName}"/>
+    &nbsp;
+    <button type="submit">Искать</button>
+</form>
+<div th:if="${books}" th:each="found : ${books}">
+    <hr>
+    <p>
+        <a th:text="${found.name}
+        + ', '
+        + ${found.authorName}
+        + ', '
+        + ${found.yearOfPublishing}"
+        th:href="@{/books/{id}(id=${found.id})}"></a>
+    </p>
+    <p th:if="${found.owner != null}" style="font-size: small" >
+        <span th:text="'Сейчас у: '"></span>
+        <a th:href="@{/people/{id}(id=${found.owner.id})}" th:text="${found.owner.name}"></a>
+    </p>
+    <p th:if="${found.owner == null}" style="font-size: small">Книга свободна</p>
+</div>
+<div th:if="${books == null} && ${searchedBookName != null}">
+    <p style="font-size: small">Книг не найдено</p>
+</div>
+</body>
+</html>
