@@ -29,7 +29,7 @@
     </p>
     <p th:if="${found.owner == null}" style="font-size: small">Книга свободна</p>
 </div>
-<div th:if="${books == null} && ${searchedBookName != null}">
+<div th:if="${books != null && books.isEmpty()}">
     <p style="font-size: small">Книг не найдено</p>
 </div>
 </body>

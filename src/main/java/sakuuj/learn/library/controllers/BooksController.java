@@ -17,6 +17,8 @@ import sakuuj.learn.library.services.PersonService;
 import sakuuj.learn.library.util.PaginationUtil;
 import sakuuj.learn.library.validators.BookValidator;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +52,6 @@ public class BooksController {
                          @RequestParam(value = "sort_by_year", required = false)
                          String sortByYearParam,
                          Model model) {
-
         boolean sortByYear;
         sortByYear = Boolean.parseBoolean(sortByYearParam);
 
@@ -95,7 +96,6 @@ public class BooksController {
     public String getSearchPage(@RequestParam(value = "searchedBook", required = false)
                                 String bookName,
                                 Model model) {
-        System.out.println(bookName);
         if (bookName == null)
             return "/books/search";
 
@@ -111,7 +111,6 @@ public class BooksController {
                                @ModelAttribute("person") Person person,
                                Model model) {
         Optional<Book> b = bookService.findById(id);
-        //   System.out.println("XXXXXXXXXXXXXXXXXXXxx");
         if (b.isPresent()) {
             copyBook(book, b.get());
 

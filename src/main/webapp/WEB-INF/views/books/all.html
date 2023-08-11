@@ -32,7 +32,7 @@
     &nbsp;
     <form th:method="GET" th:action="@{/books}">
         <label for="books_per_page">Книг на страницу</label>
-        <input type="number" value="3" id="books_per_page" name="books_per_page"
+        <input type="number" th:value="${books_per_page} == null ? 3 : ${books_per_page}" id="books_per_page" name="books_per_page"
                size="5" min="1" th:placeholder="${books_per_page}">
         &nbsp;
         <select name="sort_by_year" id="sort_by_year">
