@@ -1,6 +1,8 @@
 package sakuuj.learn.library.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sakuuj.learn.library.models.Book;
@@ -21,8 +23,8 @@ public class BookService {
     }
 
 
-    public List<Book> findAll() {
-        return bookRepo.findAll();
+    public Slice<Book> findAll(PageRequest pageRequest) {
+        return bookRepo.findAll(pageRequest);
     }
 
     public Optional<Book> findById(int id) {

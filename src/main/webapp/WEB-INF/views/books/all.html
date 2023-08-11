@@ -10,13 +10,39 @@
 <h1>Книги:</h1>
 <p th:each="book : ${books}">
     <a th:href="@{/books/{id}(id=${book.getId()})}"
-            th:text="${book.getName()}
+       th:text="${book.getName()}
 + ', '
  + ${book.getAuthorName()}
 + ', '
 + ${book.getYearOfPublishing()}"
     ></a>
 </p>
+<hr>
+<div>
+    <a th:href="@{/books(page=${prevPage},
+     books_per_page=${books_per_page},
+     sort_by_year=${sort_by_year})}">&lt;&lt;&lt;</a>
+    &nbsp;
+    <span th:text="${currentPage}"></span>
+    &nbsp;
+    <a th:href="@{/books(page=${nextPage},
+    books_per_page=${books_per_page},
+    sort_by_year=${sort_by_year})}">&gt;&gt;&gt;</a>
+    &nbsp;
+    &nbsp;
+    <form th:method="GET" th:action="@{/books}">
+        <label for="books_per_page">Книг на страницу</label>
+        <input type="number" value="3" id="books_per_page" name="books_per_page"
+               size="5" min="1" th:placeholder="${books_per_page}">
+        &nbsp;
+        <select name="sort_by_year" id="sort_by_year">
+            <option value="false">Обычный порядок</option>
+            <option value="true" th:attrappend="selected=${sort_by_year ? 'selected' : ''}">Год публикации</option>
+        </select>
+        &nbsp;
+        <button type="submit">Изменить</button>
+    </form>
+</div>
 <hr>
 <p><a th:href="@{/books/new}" th:text="'Добавить новую книгу'"></a></p>
 </body>

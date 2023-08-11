@@ -3,15 +3,18 @@ package sakuuj.learn.library.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sakuuj.learn.library.models.Book;
 import sakuuj.learn.library.models.Person;
-import sakuuj.learn.library.repositories.PersonRepository;
 import sakuuj.learn.library.services.BookService;
 import sakuuj.learn.library.services.PersonService;
+import sakuuj.learn.library.util.PaginationUtil;
 import sakuuj.learn.library.validators.BookValidator;
 
 import java.util.List;
@@ -25,6 +28,11 @@ public class BooksController {
     private PersonService personService;
     private BookValidator validator;
 
+    private static final int DEFAULT_PAGE_SIZE = 3;
+    private static final int STARTING_PAGE_NUMBER = 1;
+
+    private static final String YEAR_COLUMN_NAME = "yearOfPublishing";
+
     @Autowired
     public BooksController(BookService bookService,
                            PersonService personService,
@@ -34,13 +42,55 @@ public class BooksController {
         this.validator = validator;
     }
 
-
     @GetMapping()
-    public String getAll(Model model) {
-        List<Book> books = bookService.findAll();
+    public String getAll(@RequestParam(value = "page", required = false)
+                         String pageNumber,
+                         @RequestParam(value = "books_per_page", required = false)
+                         String booksPerPage,
+                         @RequestParam(value = "sort_by_year", required = false)
+                         String sortByYearParam,
+                         Model model) {
+
+        boolean sortByYear;
+        sortByYear = Boolean.parseBoolean(sortByYearParam);
+
+        int pageSize = DEFAULT_PAGE_SIZE;
+        if (booksPerPage != null && !booksPerPage.isEmpty()) {
+            try {
+                pageSize = PaginationUtil.parsePageSize(booksPerPage, DEFAULT_PAGE_SIZE);
+            } catch (NumberFormatException ex) {
+                return "redirect:/books";
+            }
+        }
+
+        int currentPage = PaginationUtil.getCurrentPage(pageNumber, STARTING_PAGE_NUMBER);
+        Slice<Book> slice;
+        if (sortByYear) {
+            slice = bookService.findAll(PageRequest
+                    .of(currentPage, pageSize, Sort.by(YEAR_COLUMN_NAME)));
+        } else {
+            slice = bookService.findAll(PageRequest.of(currentPage, pageSize));
+        }
+
+        if (!slice.hasContent()) {
+            if (currentPage != 0)
+                return "redirect:/books";
+        }
+
+        int prevPage = PaginationUtil.getPrevPage(currentPage, slice);
+        int nextPage = PaginationUtil.getNextPage(currentPage, slice);
+        List<Book> books = slice.getContent();
+
         model.addAttribute("books", books);
+        model.addAttribute("prevPage", prevPage + 1);
+        model.addAttribute("currentPage", currentPage + 1);
+        model.addAttribute("nextPage", nextPage + 1);
+        model.addAttribute("books_per_page", pageSize);
+        model.addAttribute("sort_by_year", sortByYear);
+
         return "books/all";
     }
+
 
     @GetMapping("/{id}")
     public String getSpecified(@PathVariable("id") int id,
@@ -48,7 +98,7 @@ public class BooksController {
                                @ModelAttribute("person") Person person,
                                Model model) {
         Optional<Book> b = bookService.findById(id);
-     //   System.out.println("XXXXXXXXXXXXXXXXXXXxx");
+        //   System.out.println("XXXXXXXXXXXXXXXXXXXxx");
         if (b.isPresent()) {
             copyBook(book, b.get());
 
@@ -87,7 +137,7 @@ public class BooksController {
     public String updateSpecified(@PathVariable("id") int id,
                                   @ModelAttribute("book") @Valid Book book,
                                   BindingResult bindingResult) {
-       // System.out.println("PPPPPPPPPPPPPPPPPPPPPPP");
+        // System.out.println("PPPPPPPPPPPPPPPPPPPPPPP");
         Optional<Book> selected = bookService.findById(id);
         if (selected.isPresent()) {
             book.setId(id);
